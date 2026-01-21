@@ -26,7 +26,7 @@ class Post(db.Model):
     title: Mapped[str] = mapped_column(String(200), nullable=False)
     image_url: Mapped[str] = mapped_column(String(500), nullable=False)   
 
-    user = relationship("User") 
+    user = relationship("User", back_populates="post") 
 
 
     def serialize(self):
@@ -44,8 +44,8 @@ class Comment(db.Model):
     post_id: Mapped[int] = mapped_column(ForeignKey("post.id"), nullable=False)
     text: Mapped[str] = mapped_column(String(300), nullable=False)    
 
-    user = relationship("User")
-    post = relationship("Post")
+    user = relationship("User", back_populates="comments")
+    post = relationship("Post", back_populates="user")
 
 
     def serialize(self):
@@ -59,10 +59,10 @@ class Comment(db.Model):
 class Follower(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     followed_id: Mapped[int] = mapped_column(ForeignKey("user.id"), nullable=False)
-    follower_id: Mapped[int] = mapped_column(ForeignKey("post.id"), nullable=False)  
+    follower_id: Mapped[int] = mapped_column(ForeignKey("user.id"), nullable=False)  
 
-    followed = relationship("User", foreign_keys=[followed_id])
-    follower = relationship("User", foreign_keys=[follower_id])
+    followed = relationship("User", foreign_keys=[followed_id], back_populates="followers")
+    follower = relationship("User", foreign_keys=[follower_id], back_populates="following")
 
 
     def serialize(self):
@@ -75,11 +75,11 @@ class Follower(db.Model):
 class Message(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     sender_id: Mapped[int] = mapped_column(ForeignKey("user.id"), nullable=False)
-    receiver_id: Mapped[int] = mapped_column(ForeignKey("post.id"), nullable=False)
+    receiver_id: Mapped[int] = mapped_column(ForeignKey("user.id"), nullable=False)
     content: Mapped[str] = mapped_column(String(500), nullable=False)
 
-    sender = relationship("User", foreign_keys=[sender_id])
-    receiver = relationship("User", foreign_keys=[receiver_id])
+    sender = relationship("User", foreign_keys=[sender_id], back_populates="sent_message")
+    receiver = relationship("User", foreign_keys=[receiver_id], back_populates="received_message")
 
 
     def serialize(self):
