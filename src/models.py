@@ -11,7 +11,13 @@ class User(db.Model):
     password: Mapped[str] = mapped_column(nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean(), nullable=False)
 
-    post = relationship("Post")
+    posts = relationship("Post", back_populates="user")
+    comments = relationship("Comment", back_populates="user")
+
+    followers = relationship("Follower", foreign_keys="Follower.followed_id", back_populates="followed")
+    following = relationship("Follower", foreign_keys="Follower.follower_id", back_populates="follower")
+    sent_messages = relationship("Message", foreign_keys="Message.sender_id", back_populates="sender")
+    received_messages = relationship("Message", foreign_keys="Message.receiver_id", back_populates="receiver")
 
     def serialize(self):
         return {
@@ -26,7 +32,8 @@ class Post(db.Model):
     title: Mapped[str] = mapped_column(String(200), nullable=False)
     image_url: Mapped[str] = mapped_column(String(500), nullable=False)   
 
-    user = relationship("User", back_populates="post") 
+    user = relationship("User", back_populates="posts")
+    comments = relationship("Comment", back_populates="post")
 
 
     def serialize(self):
@@ -45,7 +52,7 @@ class Comment(db.Model):
     text: Mapped[str] = mapped_column(String(300), nullable=False)    
 
     user = relationship("User", back_populates="comments")
-    post = relationship("Post", back_populates="user")
+    post = relationship("Post", back_populates="comments")
 
 
     def serialize(self):
@@ -78,8 +85,8 @@ class Message(db.Model):
     receiver_id: Mapped[int] = mapped_column(ForeignKey("user.id"), nullable=False)
     content: Mapped[str] = mapped_column(String(500), nullable=False)
 
-    sender = relationship("User", foreign_keys=[sender_id], back_populates="sent_message")
-    receiver = relationship("User", foreign_keys=[receiver_id], back_populates="received_message")
+    sender = relationship("User", foreign_keys=[sender_id], back_populates="sent_messages")
+    receiver = relationship("User", foreign_keys=[receiver_id], back_populates="received_messages")
 
 
     def serialize(self):
